@@ -1,0 +1,42 @@
+# python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# environments
+.venv/
+venv/
+env/
+ENV/
+
+# yolo models and local tracking runs
+yolov8n.pt
+runs/
+
+# local environment secrets
+.env
+.env.*
+
+# ide settings
+.vscode/
+.idea/
+
+# os junk files
+.DS_Store
+Thumbs.db
+
+# build and packaging artifacts
+build/
+dist/
+*.egg-info/
+*.log
+
+# testing and jupyter notebook clutter
+.ipynb_checkpoints/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# temp files
+*.tmp
+*.bak
