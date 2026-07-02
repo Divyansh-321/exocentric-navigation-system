@@ -260,16 +260,15 @@ The animation demonstrates the complete perception-to-action pipeline, including
 
 ### Technical Report
 
-A detailed implementation report is available in:
+A detailed implementation report is available here:
 
-`docs/Final_ENDTERM_REPORT.pdf`
+📄 [Technical Report (PDF)](docs/Final_ENDTERM_REPORT.pdf)
 
 ### Full Demonstration Video
 
-A complete demonstration, including multiple autonomous navigation runs, is available in:
+A complete demonstration, including multiple autonomous navigation runs, is available here:
 
-`assets/robot_demo.mp4`
-
+▶️ [Full Demonstration Video (MP4)](assets/robot_demo.mp4)
 
 ---
 
