@@ -242,7 +242,7 @@ The implemented system demonstrates:
 
 The figure below shows the complete navigation pipeline during runtime. The system simultaneously performs robot localization, obstacle detection, path planning, and closed-loop control while navigating toward the selected destination.
 
-![Autonomous Navigation](assets/screenshots/autonomous_navigation.png)
+![Autonomous Navigation](assets/screenshots/autonomous_navigation.jpeg)
 
 ---
 
