@@ -177,7 +177,7 @@ During early prototyping, a LILYGO T-A7672S board (ESP32 + SIMCom A7672S LTE mod
 
 The final implementation uses an ESP8266 module as a lightweight Wi-Fi UDP bridge between the host system and Arduino, chosen for its simplicity, sufficient performance, and lower system overhead.
 
-**Note on System Consistency:**  
+**System Consistency Note:**  
 The repository codebase corresponds to the final implementation using ESP8266 as the Wi-Fi communication bridge. Earlier prototyping used a different hardware setup, but all current scripts, firmware, and communication logic are aligned with the ESP8266-based system.
 
 ---
