@@ -188,7 +188,7 @@ README.md
 **Embedded Firmware:**
 - C++/Arduino Core
 - SoftwareSerial Library (Inter-board UART bridge)
-- Motor_Shield Library (Providing the custom `DCMotor` object class abstraction for the L293D Specifically supporting the L293D H-Bridge driver)
+- Motor_Shield Library (Provides the DCMotor abstraction for controlling the L293D motor driver)
 
 ---
 
