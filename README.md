@@ -172,9 +172,13 @@ README.md
 - **Compute:** Host PC (Python-based vision + planning)
 - **Sensor:** Overhead monocular camera
 
- 
+- 
+**Hardware Iteration Note:**  
+During early prototyping, a LILYGO T-A7672S board (ESP32 + SIMCom A7672S LTE module) was used for testing communication and system integration.  
 
----
+The final implementation uses an ESP8266 module as a lightweight Wi-Fi UDP bridge between the host system and Arduino, chosen for its simplicity, sufficient performance, and lower system overhead.
+
+ ---
 
 # Software Stack
 
