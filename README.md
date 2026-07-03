@@ -14,6 +14,13 @@ The system leverages centralized deep learning inference (YOLOv8) for real-time 
 
 This architecture enables accurate global localization, robust obstacle-aware navigation, and computationally efficient real-time operation on resource-constrained robotic hardware.
 
+---
+
+# Project Motivation
+
+Many educational and low-cost robotic platforms are constrained by limited onboard computation and sensing capabilities, making real-time autonomous navigation challenging. Rather than increasing onboard hardware complexity, this project explores an exocentric navigation paradigm in which perception, planning, and decision-making are performed externally while the robot acts as a lightweight execution platform.
+
+This design demonstrates how distributed computation, computer vision, and embedded control can be integrated into a modular closed-loop navigation system capable of real-time autonomous operation.
 
 ---
 
@@ -117,19 +124,43 @@ This separation improves:
 
 ---
 
+# Key Engineering Decisions
+
+Several architectural choices were intentionally made to balance computational efficiency and real-time performance.
+
+- Deep learning inference is executed on the host computer rather than onboard the robot, allowing computationally intensive perception algorithms to run without exceeding embedded hardware limitations.
+
+- UDP communication was selected to minimize communication latency between the host system and the robot, accepting occasional packet loss in exchange for faster control updates.
+
+- A Kalman filter was used to improve robustness against noisy visual measurements and temporary tracking inaccuracies.
+
+- Pulse-based motion control was adopted instead of continuous actuation to reduce overshoot and improve navigation stability on low-cost differential-drive hardware.
+
+- Weighted A* planning was chosen because it provides deterministic, computationally efficient path generation while allowing safety-oriented cost penalties around detected obstacles.
+ 
+---
+
 # Repository Structure
 
 ```
-vision/        → Homography, detection pipeline
-tracking/      → Kalman filter, object tracking
-planning/      → A* path planning, cost maps
-control/       → State machine, motion control
-comm/          → UDP + protocol handling
-utils/         → Geometry + visualization tools
-config/        → System configuration
-robot/         → ESP8266 + Arduino firmware
-models/        → Trained YOLO weights
-```
+vision/        → Homography, detection pipeline
+tracking/      → Kalman filter, object tracking
+planning/      → A* path planning, cost maps
+control/       → State machine, motion control
+comm/          → UDP communication and protocol handling
+utils/         → Geometry and visualization tools
+config/        → System configuration files
+robot/         → ESP8266 and Arduino firmware
+models/        → Trained YOLO weights
+
+assets/        → Demo media (images, videos, GIFs)
+docs/          → Technical report and architecture diagrams
+
+main.py        → Application entry point
+requirements.txt → Python dependencies
+.gitignore
+LICENSE
+README.md
 
 ---
 
@@ -153,7 +184,8 @@ models/        → Trained YOLO weights
 - Arduino IDE (motor control firmware)
 - ESP8266 Wi-Fi firmware
 
-**Embedded Firmware:** - C++/Arduino Core
+**Embedded Firmware:**
+- C++/Arduino Core
 - SoftwareSerial Library (Inter-board UART bridge)
 - Motor_Shield Library (Providing the custom `DCMotor` object class abstraction for the L293D Specifically supporting the L293D H-Bridge driver)
 
@@ -164,7 +196,7 @@ models/        → Trained YOLO weights
 ```bash
 git clone https://github.com/<your-username>/exocentric-navigation-systems.git
 cd exocentric-navigation-systems
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 ---
@@ -216,20 +248,36 @@ Transforms continuous motion into discrete stable movement commands.
 
 ---
 
+# Limitations
+
+Like most vision-based autonomous navigation systems, the current implementation makes several design assumptions:
+
+- **Overhead Camera Requirement:** The system relies on a fixed overhead camera to obtain a global view of the environment. Navigation accuracy depends on maintaining sufficient camera headroom and an unobstructed field of view.
+
+- **Homography-Based Workspace:** Robot localization is performed using a manually calibrated homography transformation. Significant camera movement or changes in the workspace require recalibration.
+
+- **Known Obstacle Classes:** Obstacle avoidance is limited to object categories that are recognized by the trained YOLOv8 detection model. Previously unseen obstacle classes may not be incorporated into the navigation map.
+
+- **Single-Robot Operation:** The current architecture is designed for a single mobile robot and does not include multi-robot coordination or cooperative path planning.
+
+- **Static Planning Environment:** Path planning assumes that obstacle locations remain relatively stable during navigation. Highly dynamic environments may require continuous replanning and more advanced prediction techniques.
+ 
+---
+
 # Future Improvements
 
-- Multi-robot coordination system
 - ROS2 migration
-- SLAM-based internal mapping
+- Multi-robot coordination
+- Multi-camera fusion
+- SLAM-based mapping
+- GPU-accelerated inference
 - Reinforcement learning-based navigation
-- GPU accelerated inference pipeline
-- Multi-camera fusion system
 
 ---
 
 # Results
 
-The implemented system demonstrates:
+The implemented system successfully demonstrates:
 
 - Real-time robot localization using overhead vision
 - Robust visual tracking with Kalman filter state estimation
