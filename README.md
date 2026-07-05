@@ -70,6 +70,16 @@ This separation enables:
 
 ---
 
+# System Boundaries & Runtime Characteristics
+
+The architecture enforces strict operational boundaries between non-deterministic intelligence and deterministic actuation.
+
+* **Host System (Perception & Planning):** Operates in soft real-time. The perception loop runs at approximately **15–30 Hz** (bottlenecked by camera capture rate and YOLOv8 host inference). Pathfinding executes virtually instantaneously over a **20x20 quantized spatial grid**.
+* **Network Layer (Communication):** Operates on a best-effort basis. UDP prioritizes the most recent command over reliable delivery, accepting occasional packet drop to maintain minimum state latency.
+* **Embedded Layer (Actuation):** Operates as a hard real-time execution agent. The Arduino maintains no state awareness; it executes a fixed **200ms actuation pulse** per received command before auto-halting to prevent network-induced overshoot.
+
+---
+ 
 # Key Features
 
 - Exocentric distributed navigation architecture
@@ -280,17 +290,6 @@ Transforms continuous motion into discrete stable movement commands.
 
 ---
 
-# Engineering Highlights
-
-- Modular multi-layer architecture (vision → planning → control)
-- Distributed computation between PC and embedded systems
-- Real-time perception-to-action loop
-- Robust tracking with sensor fusion principles
-- Hybrid classical + deep learning robotics pipeline
-- Networked robot control using UDP protocol
-
----
-
 # Limitations
 
 Like most vision-based autonomous navigation systems, the current implementation makes several design assumptions:
@@ -305,6 +304,16 @@ Like most vision-based autonomous navigation systems, the current implementation
 
 - **Static Planning Environment:** Path planning assumes that obstacle locations remain relatively stable during navigation. Highly dynamic environments may require continuous replanning and more advanced prediction techniques.
  
+---
+
+# Edge Behavior & System Degradation
+
+The system exhibits specific deterministic behaviors under edge-case conditions and sensor failure:
+
+* **Out-of-Bounds State Loss:** The operational workspace is strictly bounded by the calibrated homography matrix. If the robot travels outside this mapped coordinate space (e.g., into the unmapped camera periphery), visual tracking immediately fails. The system is designed to fail safely: it halts state estimation and broadcasts a continuous `X` (STOP) pulse over UDP to prevent runaway actuation.
+* **Scale-Dependent Padding Variance:** Obstacle avoidance relies on static spatial padding added to YOLOv8 bounding boxes. Because the homography is calibrated using a flat physical reference , any significant change in the camera's height or the height of the physical obstacles alters the perspective scale. In edge cases, this perspective distortion results in insufficient obstacle inflation, occasionally allowing the robot to clip the edges of taller objects.
+* **Dynamic Obstacle Occlusion:** Since the system relies entirely on exocentric overhead vision, if an obstacle physically occludes the robot from the camera's view, the Kalman filter will attempt to predict the robot's trajectory. However, prolonged occlusion will cause state drift, eventually requiring a system reset.
+
 ---
 
 # Future Improvements
