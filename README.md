@@ -3,70 +3,27 @@
 A real-time **distributed robotic navigation system** designed for resource-constrained embedded platforms, where perception, state estimation, and planning are decoupled from onboard computation and executed on an external host to achieve low-latency closed-loop control.
 
 ---
+# Problem Statement & Motivation
 
-# Problem Statement
+Autonomous navigation on low-cost robotic platforms is fundamentally constrained by limited onboard compute. Intelligent algorithms are compute-heavy, but embedded microcontrollers are compute-limited. 
 
-Autonomous navigation on low-cost robotic platforms is fundamentally constrained by limited onboard compute, unreliable localization, and the inability to execute modern perception models in real time.
-
-This system addresses these constraints through a **distributed exocentric architecture**, where an external vision system provides global observability of the environment, eliminating reliance on onboard SLAM, IMU-based drift correction, or heavy onboard inference pipelines.
-
-The core challenge addressed is real-time closed-loop navigation under externalized perception with strict communication latency constraints and noisy visual state estimation.
-
-A centralized compute node performs:
-- real-time visual localization
-- deep learning-based obstacle inference (YOLOv8)
-- state stabilization via Kalman filtering
-- cost-aware path planning using weighted A*
-
-while a lightweight embedded agent executes deterministic motion commands over a wireless control channel.
-
----
-
-# Project Motivation
-
-This work is motivated by a fundamental constraint in embedded robotics systems: intelligent algorithms are compute-heavy, but embedded platforms are compute-limited.
-
-Instead of scaling onboard hardware, this system explores a **compute-offloaded navigation paradigm**, where the robot is reduced to a minimal actuation unit and all perception and decision-making is shifted to an external processing node.
-
-This enables:
-- deployment of deep learning models without onboard GPU constraints  
-- stable global localization without SLAM complexity  
-- deterministic control over low-cost embedded hardware  
+Instead of scaling onboard hardware, this system explores a **compute-offloaded navigation paradigm**. By utilizing an exocentric (overhead) camera, the system achieves global observability of the environment, eliminating the need for complex onboard SLAM, IMU-based drift correction, or edge GPUs. 
 
 The system demonstrates how robotics can be restructured as a **distributed real-time control problem rather than a monolithic onboard computation system**.
 
 ---
 
-# Abstract
+# System Overview 
 
-This project presents a **real-time distributed robotic navigation system** integrating computer vision, probabilistic state estimation, and graph-based path planning under a constrained wireless control loop.
+This project presents a **real-time distributed control pipeline** that integrates computer vision, probabilistic state estimation, and graph-based path planning under a constrained wireless control loop.
 
-An overhead camera provides a global environmental view, enabling exocentric robot localization through motion tracking and filtering techniques. A Kalman filter is applied to stabilize state estimation under visual noise and temporary tracking degradation.
+A centralized host machine and an overhead camera (e.g., C270 HD Webcam @ 720p/30fps) provide a global environmental view. This enables exocentric robot localization through motion tracking, stabilized by a Kalman filter to mitigate visual noise. Obstacle perception is performed using a host-side YOLOv8 inference pipeline (running on Python 3.8+), which converts semantic detections into a structured grid-based cost map.
 
-Obstacle perception is performed using a YOLOv8-based inference pipeline running on a host system, converting semantic detections into a structured grid-based cost map.
-
-Navigation is performed using a weighted A* planner operating over this cost map, incorporating obstacle inflation and soft constraints to ensure safety-aware trajectory generation.
-
-A pulse-based control strategy converts continuous motion requirements into discrete actuation commands, mitigating overshoot introduced by network latency and non-deterministic wireless transmission.
-
-Wireless communication is implemented using an ESP8266 module over UDP, which forwards commands to an Arduino microcontroller responsible for motor actuation.
-
-The system demonstrates real-time performance in closed-loop perception–planning–control execution under externalized computation constraints.
-
----
-
-# System Overview
-
-The system is designed as a **distributed real-time control pipeline**, where computational intelligence is moved outside the embedded boundary.
+Navigation is executed using a weighted A* planner operating over this cost map. A pulse-based control strategy then converts continuous motion requirements into discrete actuation commands, mitigating overshoot introduced by network latency. These commands are dispatched via an ESP8266 Wi-Fi UDP bridge to a lightweight Arduino agent, which acts strictly as a deterministic motor actuator.
 
 ### Core Pipeline
 
 Camera → External Vision Compute → State Estimation → Cost Map Generation → Path Planning → Control Signal Generation → Wireless Actuation → Robot Motion
-
-This separation enables:
-- deterministic embedded execution
-- compute-heavy perception on host system
-- real-time closed-loop feedback under network latency constraints
 
 ---
 
@@ -74,7 +31,7 @@ This separation enables:
 
 The architecture enforces strict operational boundaries between non-deterministic intelligence and deterministic actuation.
 
-* **Host System (Perception & Planning):** Operates in soft real-time. The perception loop runs at approximately **15–30 Hz** (bottlenecked by camera capture rate and YOLOv8 host inference). Pathfinding executes virtually instantaneously over a **20x20 quantized spatial grid**, utilizing an **80-pixel dynamic lookahead radius** to smooth trajectory execution and prevent control oscillation near waypoints.
+* **Host System (Perception & Planning):** Operates in soft real-time. The perception loop runs at approximately **15–30 Hz** (bottlenecked by native **720p** camera capture rate and YOLOv8 host inference). Pathfinding executes virtually instantaneously over a **20x20 quantized spatial grid mapped from the native 1280 X 720 frame canvas**, utilizing an **80-pixel dynamic lookahead radius** to smooth trajectory execution and prevent control oscillation near waypoints.
 * **Network Layer (Communication):** Operates on a best-effort basis. UDP prioritizes the most recent command over reliable delivery. Navigation commands are dispatched at a strictly bounded **400ms control interval**, dynamically compensating for heading errors using a **±30° tolerance deadband** without overloading the UDP network buffer.
 * **Embedded Layer (Actuation):** Operates as a hard real-time execution agent. The Arduino maintains no state awareness; it executes a fixed **200ms actuation pulse** per received command before auto-halting to prevent network-induced overshoot.
 
@@ -146,17 +103,17 @@ The following diagram presents the complete closed-loop exocentric navigation pi
 The system is intentionally designed around a **compute–control separation principle**, where all non-deterministic and compute-heavy tasks are externalized, while the embedded system is restricted to deterministic execution.
 
 This separation improves:
-- real-time performance
-- system modularity
-- fault isolation
-- scalability to multi-robot extensions
+- Real-time performance
+- System modularity
+- Fault isolation
+- Scalability to multi-robot extensions
 
 Key design principles:
-- prioritize real-time responsiveness over communication reliability (UDP choice)
-- reduce onboard complexity to improve embedded robustness
-- stabilize noisy perception using probabilistic filtering (Kalman filter)
-- convert continuous control into discrete actuation to mitigate network jitter
-- use grid abstraction to unify perception and planning layers
+- Prioritize real-time responsiveness over communication reliability (UDP choice)
+- Reduce onboard complexity to improve embedded robustness
+- Stabilize noisy perception using probabilistic filtering (Kalman filter)
+- Convert continuous control into discrete actuation to mitigate network jitter
+- Use grid abstraction to unify perception and planning layers
 
 ---
 
@@ -224,7 +181,7 @@ README.md
 - **Robot Platform:** Stacked Arduino UNO + L293D Shield
 - **Communication:** ESP8266 (Wi-Fi UDP → Serial bridge)
 - **Compute:** Host PC (Python-based vision + planning)
-- **Sensor:** Overhead monocular camera
+- **Sensor:** Logitech C270 HD Webcam (720p/30fps, parallel overhead mount)
 
 **Hardware Iteration Note:**  
 During early prototyping, a LILYGO T-A7672S board (ESP32 + SIMCom A7672S LTE module) was used for testing communication and system integration.  
@@ -252,11 +209,21 @@ The repository codebase corresponds to the final implementation using ESP8266 as
 
 ---
 
-# Installation
+# Installation & Setup
+
+### 1. Embedded Hardware Setup
+1. Open the firmware files in the `/robot` directory using the Arduino IDE.
+2. Open the ESP8266 firmware code and locate the Wi-Fi configuration variables. 
+3. **Change the Wi-Fi name (SSID) and password** to match your local Wi-Fi network (ensure this is the exact same network your host laptop is connected to).
+4. Flash the ESP8266 module, then open the Serial Monitor to note its assigned IP address.
+5. Flash the Arduino UNO motor control firmware.
+
+### 2. Host System Setup
+Clone the repository and install the required Python dependencies:
 
 ```bash
-git clone https://github.com/<your-username>/exocentric-navigation-systems.git
-cd exocentric-navigation-systems
+git clone https://github.com/<your-username>/exocentric-navigation-system.git
+cd exocentric-navigation-system
 python -m pip install -r requirements.txt
 ```
 
@@ -264,18 +231,17 @@ python -m pip install -r requirements.txt
 
 # Execution
 
-1. Flash ESP8266 and Arduino firmware from `/robot`
-2. Connect system to Wi-Fi network
-3. Update ESP8266 IP in `config/settings.py`
-4. Run:
+1. Verify that both your host machine (laptop) and the ESP8266 are connected to your configured local Wi-Fi network.
+2. Update the ESP8266 IP address in `config/settings.py` with the one obtained from the Serial Monitor.
+3. Launch the host pipeline:
 
 ```bash
 python main.py
 ```
 
-5. Calibrate using four-point homography selection
-6. Press **SPACE** to initialize robot orientation calibration
-7. Click target location for autonomous navigation
+4. **Calibrate:** Click 4 points in the video feed to define the homography workspace.
+5. **Initialize:** Press **SPACE** to initialize robot orientation calibration.
+6. **Navigate:** Click a target location on the interface for autonomous pathfinding and execution.
 
 ---
 
@@ -319,7 +285,7 @@ Like most vision-based autonomous navigation systems, the current implementation
 The system exhibits specific deterministic behaviors under edge-case conditions and sensor failure:
 
 * **Out-of-Bounds State Loss:** The operational workspace is strictly bounded by the calibrated homography matrix. If the robot travels outside this mapped coordinate space (e.g., into the unmapped camera periphery), visual tracking immediately fails. The system is designed to fail safely: it halts state estimation and broadcasts a continuous `X` (STOP) pulse over UDP to prevent runaway actuation.
-* **Scale-Dependent Padding Variance:** Obstacle avoidance relies on static spatial padding added to YOLOv8 bounding boxes. Because the homography is calibrated using a flat physical reference , any significant change in the camera's height or the height of the physical obstacles alters the perspective scale. In edge cases, this perspective distortion results in insufficient obstacle inflation, occasionally allowing the robot to clip the edges of taller objects.
+* **Scale-Dependent Padding Variance:** Obstacle avoidance relies on static spatial padding added to YOLOv8 bounding boxes. Because the homography is calibrated using a flat physical reference, any significant change in the camera's height or the height of the physical obstacles alters the perspective scale. In edge cases, this perspective distortion results in insufficient obstacle inflation, occasionally allowing the robot to clip the edges of taller objects.
 * **Dynamic Obstacle Occlusion:** Since the system relies entirely on exocentric overhead vision, if an obstacle physically occludes the robot from the camera's view, the Kalman filter will attempt to predict the robot's trajectory. However, prolonged occlusion will cause state drift, eventually requiring a system reset.
 
 ---
