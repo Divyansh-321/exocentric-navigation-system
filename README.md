@@ -1,65 +1,84 @@
 # Exocentric Navigation System
 
-A real-time autonomous robotics system integrating computer vision, state estimation, path planning, and wireless embedded control for closed-loop navigation using an external perception framework.
+A real-time **distributed robotic navigation system** designed for resource-constrained embedded platforms, where perception, state estimation, and planning are decoupled from onboard computation and executed on an external host to achieve low-latency closed-loop control.
 
 ---
 
 # Problem Statement
 
-Autonomous navigation on low-cost robotic platforms is constrained by limited onboard sensing, computational resources, and unreliable localization. Traditional onboard-only solutions often suffer from odometry drift, sensor noise, and the inability to run real-time deep learning models for perception and obstacle detection.
+Autonomous navigation on low-cost robotic platforms is fundamentally constrained by limited onboard compute, unreliable localization, and the inability to execute modern perception models in real time.
 
-This project addresses these limitations by decoupling perception, planning, and control, shifting all computationally intensive tasks to an external host system. An overhead camera provides global environmental awareness, enabling accurate robot localization without relying on onboard SLAM or IMU-based estimation.
+This system addresses these constraints through a **distributed exocentric architecture**, where an external vision system provides global observability of the environment, eliminating reliance on onboard SLAM, IMU-based drift correction, or heavy onboard inference pipelines.
 
-The system leverages centralized deep learning inference (YOLOv8) for real-time obstacle detection, converts detections into a grid-based environment representation, and performs weighted A* path planning for safe navigation. Motion commands are executed through a low-latency wireless communication pipeline, enabling real-time closed-loop control of the robot.
+The core challenge addressed is real-time closed-loop navigation under externalized perception with strict communication latency constraints and noisy visual state estimation.
 
-This architecture enables accurate global localization, robust obstacle-aware navigation, and computationally efficient real-time operation on resource-constrained robotic hardware.
+A centralized compute node performs:
+- real-time visual localization
+- deep learning-based obstacle inference (YOLOv8)
+- state stabilization via Kalman filtering
+- cost-aware path planning using weighted A*
+
+while a lightweight embedded agent executes deterministic motion commands over a wireless control channel.
 
 ---
 
 # Project Motivation
 
-Many educational and low-cost robotic platforms are constrained by limited onboard computation and sensing capabilities, making real-time autonomous navigation challenging. Rather than increasing onboard hardware complexity, this project explores an exocentric navigation paradigm in which perception, planning, and decision-making are performed externally while the robot acts as a lightweight execution platform.
+This work is motivated by a fundamental constraint in embedded robotics systems: intelligent algorithms are compute-heavy, but embedded platforms are compute-limited.
 
-This design demonstrates how distributed computation, computer vision, and embedded control can be integrated into a modular closed-loop navigation system capable of real-time autonomous operation.
+Instead of scaling onboard hardware, this system explores a **compute-offloaded navigation paradigm**, where the robot is reduced to a minimal actuation unit and all perception and decision-making is shifted to an external processing node.
+
+This enables:
+- deployment of deep learning models without onboard GPU constraints  
+- stable global localization without SLAM complexity  
+- deterministic control over low-cost embedded hardware  
+
+The system demonstrates how robotics can be restructured as a **distributed real-time control problem rather than a monolithic onboard computation system**.
 
 ---
 
 # Abstract
 
-This project presents a real-time autonomous robot navigation system that integrates computer vision, path planning, and wireless communication. The system uses an overhead camera to monitor the environment, where the robot is detected and tracked using motion detection, visual tracking, and filtering techniques. A Kalman filter is applied to improve the accuracy and stability of robot position estimation.
+This project presents a **real-time distributed robotic navigation system** integrating computer vision, probabilistic state estimation, and graph-based path planning under a constrained wireless control loop.
 
-Obstacle detection is performed using a deep learning model based on YOLO, which identifies obstacles in the environment and maps them into a grid-based representation for efficient navigation.
+An overhead camera provides a global environmental view, enabling exocentric robot localization through motion tracking and filtering techniques. A Kalman filter is applied to stabilize state estimation under visual noise and temporary tracking degradation.
 
-A grid-based A* path planning algorithm computes the shortest and safest path from the robot’s current position to a user-defined target. Enhancements such as obstacle padding, soft constraints, and path memory are incorporated to ensure smooth and collision-free navigation.
+Obstacle perception is performed using a YOLOv8-based inference pipeline running on a host system, converting semantic detections into a structured grid-based cost map.
 
-The system employs pulse-based control, where short-duration movement commands are sent to the robot instead of continuous actuation signals. These pulses are generated based on real-time position and orientation feedback, improving stability and reducing overshooting.
+Navigation is performed using a weighted A* planner operating over this cost map, incorporating obstacle inflation and soft constraints to ensure safety-aware trajectory generation.
+
+A pulse-based control strategy converts continuous motion requirements into discrete actuation commands, mitigating overshoot introduced by network latency and non-deterministic wireless transmission.
 
 Wireless communication is implemented using an ESP8266 module over UDP, which forwards commands to an Arduino microcontroller responsible for motor actuation.
 
-The system demonstrates real-time performance in robot tracking, obstacle avoidance, and autonomous navigation, highlighting the integration of artificial intelligence, computer vision, and embedded systems into a unified robotic architecture.
+The system demonstrates real-time performance in closed-loop perception–planning–control execution under externalized computation constraints.
 
 ---
 
 # System Overview
 
-The system is designed as a **closed-loop exocentric navigation pipeline**, where perception and decision-making are performed externally on a host machine.
+The system is designed as a **distributed real-time control pipeline**, where computational intelligence is moved outside the embedded boundary.
 
 ### Core Pipeline
 
-Camera → Vision Processing → State Estimation → Obstacle Mapping → Path Planning → Control → Wireless Execution → Robot Motion
+Camera → External Vision Compute → State Estimation → Cost Map Generation → Path Planning → Control Signal Generation → Wireless Actuation → Robot Motion
+
+This separation enables:
+- deterministic embedded execution
+- compute-heavy perception on host system
+- real-time closed-loop feedback under network latency constraints
 
 ---
 
 # Key Features
 
-- Exocentric (external camera-based) navigation architecture
+- Exocentric distributed navigation architecture
 - Real-time robot detection and tracking
 - Kalman filter-based state estimation
 - YOLOv8-based obstacle detection
 - Grid-based environment representation
 - Weighted A* path planning with cost penalties
-- Obstacle inflation and soft constraints
-- Path memory for trajectory smoothing
+- Obstacle inflation and path memory for smoother trajectories
 - Pulse-based motion control for stability
 - UDP-based wireless communication pipeline
 - ESP8266 → Arduino motor control bridge
@@ -114,30 +133,47 @@ The following diagram presents the complete closed-loop exocentric navigation pi
 
 # Design Philosophy
 
-The system is intentionally designed as a distributed architecture to separate perception, planning, and actuation. This allows the computationally heavy vision and planning modules to run on a host machine while keeping the embedded controller lightweight and deterministic.
+The system is intentionally designed around a **compute–control separation principle**, where all non-deterministic and compute-heavy tasks are externalized, while the embedded system is restricted to deterministic execution.
 
 This separation improves:
-- Real-time performance
-- Modularity
-- Fault isolation
-- Scalability to multi-robot systems
+- real-time performance
+- system modularity
+- fault isolation
+- scalability to multi-robot extensions
+
+Key design principles:
+- prioritize real-time responsiveness over communication reliability (UDP choice)
+- reduce onboard complexity to improve embedded robustness
+- stabilize noisy perception using probabilistic filtering (Kalman filter)
+- convert continuous control into discrete actuation to mitigate network jitter
+- use grid abstraction to unify perception and planning layers
 
 ---
 
 # Key Engineering Decisions
 
-Several architectural choices were intentionally made to balance computational efficiency and real-time performance.
+- Deep learning inference is executed on a host machine rather than onboard the robot, allowing computationally intensive perception without embedded constraints.
 
-- Deep learning inference is executed on the host computer rather than onboard the robot, allowing computationally intensive perception algorithms to run without exceeding embedded hardware limitations.
+- UDP communication is used to minimize control latency, prioritizing real-time responsiveness over guaranteed delivery.
 
-- UDP communication was selected to minimize communication latency between the host system and the robot, accepting occasional packet loss in exchange for faster control updates.
+- A Kalman filter is used to improve robustness against noisy visual measurements and transient tracking errors.
 
-- A Kalman filter was used to improve robustness against noisy visual measurements and temporary tracking inaccuracies.
+- Pulse-based motion control is adopted to reduce overshoot caused by discrete wireless command updates.
 
-- Pulse-based motion control was adopted instead of continuous actuation to reduce overshoot and improve navigation stability on low-cost differential-drive hardware.
+- Weighted A* planning is chosen as a deterministic, computationally efficient path planning algorithm with safety-aware cost penalties.
 
-- Weighted A* planning was chosen because it provides deterministic, computationally efficient path generation while allowing safety-oriented cost penalties around detected obstacles.
- 
+---
+
+# Engineering Highlights
+
+- Distributed real-time robotics architecture under embedded compute constraints
+- Externalized perception pipeline replacing onboard SLAM dependency
+- Probabilistic state estimation under noisy visual input
+- Real-time cost-map based navigation with grid abstraction
+- Latency-aware control design over unreliable wireless communication
+- Hybrid classical + deep learning robotics pipeline
+- Closed-loop execution under non-deterministic network delays
+
 ---
 
 # Repository Structure
