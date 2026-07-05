@@ -74,8 +74,8 @@ This separation enables:
 
 The architecture enforces strict operational boundaries between non-deterministic intelligence and deterministic actuation.
 
-* **Host System (Perception & Planning):** Operates in soft real-time. The perception loop runs at approximately **15–30 Hz** (bottlenecked by camera capture rate and YOLOv8 host inference). Pathfinding executes virtually instantaneously over a **20x20 quantized spatial grid**.
-* **Network Layer (Communication):** Operates on a best-effort basis. UDP prioritizes the most recent command over reliable delivery, accepting occasional packet drop to maintain minimum state latency.
+* **Host System (Perception & Planning):** Operates in soft real-time. The perception loop runs at approximately **15–30 Hz** (bottlenecked by camera capture rate and YOLOv8 host inference). Pathfinding executes virtually instantaneously over a **20x20 quantized spatial grid**, utilizing an **80-pixel dynamic lookahead radius** to smooth trajectory execution and prevent control oscillation near waypoints.
+* **Network Layer (Communication):** Operates on a best-effort basis. UDP prioritizes the most recent command over reliable delivery. Navigation commands are dispatched at a strictly bounded **400ms control interval**, dynamically compensating for heading errors using a **±30° tolerance deadband** without overloading the UDP network buffer.
 * **Embedded Layer (Actuation):** Operates as a hard real-time execution agent. The Arduino maintains no state awareness; it executes a fixed **200ms actuation pulse** per received command before auto-halting to prevent network-induced overshoot.
 
 ---
