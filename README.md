@@ -172,6 +172,14 @@ Key design principles:
 
 - Weighted A* planning is chosen as a deterministic, computationally efficient path planning algorithm with safety-aware cost penalties.
 
+### Architectural Tradeoff Analysis
+
+| Component | Selected Approach | Rejected Alternative | Primary Systems Tradeoff Justification |
+| :--- | :--- | :--- | :--- |
+| **Communication Layer** | **UDP** | TCP / WebSockets | **Latency over Reliability.** TCP's packet retry mechanism causes head-of-line blocking. Dropping a stale packet is safer than executing delayed movement commands. |
+| **Perception Pipeline** | **Exocentric Vision (Host)** | Onboard SLAM (e.g., Jetson Nano) | **Compute over Autonomy.** Offloading to a host allows for heavy YOLOv8 inference without the SWaP-C (Size, Weight, Power, Cost) penalty of onboard GPUs. |
+| **Control Strategy** | **Discrete 200ms Pulse** | Continuous PID Control | **Jitter Tolerance over Smoothness.** Continuous control over wireless introduces network-induced overshoot. A bounded pulse auto-halts the robot if the network drops. |
+
 ---
 
 # Engineering Highlights
