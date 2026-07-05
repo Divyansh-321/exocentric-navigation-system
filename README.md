@@ -25,6 +25,8 @@ Navigation is executed using a weighted A* planner operating over this cost map.
 
 Camera → External Vision Compute → State Estimation → Cost Map Generation → Path Planning → Control Signal Generation → Wireless Actuation → Robot Motion
 
+This project was developed as a group effort; however, the end-to-end perception–planning–control architecture, system integration, and core implementation were primarily designed and implemented by the author.
+
 ---
 
 # System Boundaries & Runtime Characteristics
