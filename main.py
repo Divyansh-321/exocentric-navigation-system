@@ -60,14 +60,14 @@ def main():
     homography_matrix = None
     cv2.namedWindow("Nav System")
     
-    # Lead Eng Fix: Capture a startup frame to establish dimension constants safely before the loop
+    # Capture a startup frame to establish frame dimensions before the loop
     ret, init_frame = cap.read()
     if not ret:
         print("[ERROR] Initialization failed. Unable to read from video source.")
         return
     h, w, _ = init_frame.shape
     
-    # Lead Eng Fix: Register mouse listener exactly ONCE here to protect processing resources
+    # Register mouse callback handler
     cv2.setMouseCallback("Nav System", mouse_click_handler, param=[sys_state, w, h])
     
     print("[INFO] System online. Click the 4 corners of your arena setup.")
@@ -80,7 +80,7 @@ def main():
 
         # Calibration phase
         if sys_state.state == "WARMUP":
-            # Lead Eng Fix: Removed raw_frame contamination from motion detector to protect calibration history
+            # Prevent background subtraction processing during the warmup phase
             
             # Still collecting the 4 corners
             if len(clicked_points) < 4:
@@ -311,7 +311,7 @@ def main():
                     vis.draw_path(frame, [])
                     udp_client.send(RobotProtocol.serialize('X'))
 
-            # Lead Eng Fix: Moved visualization methods inside the explicit tracking scope to guarantee variable execution safety
+            # Render visualization overlays within the active tracking scope
             vis.draw_robot(frame, rx, ry, rw, rh, smooth_cx, smooth_cy, sys_state.smooth_px, sys_state.smooth_py)
             vis.draw_hud(frame, sys_state.state, 0, 0, "RUNNING", sys_state.current_nav_cmd)
 
