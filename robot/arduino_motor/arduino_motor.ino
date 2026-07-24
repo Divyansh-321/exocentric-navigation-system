@@ -16,10 +16,10 @@ void loop() {
     char command = espSerial.read();
 
     if (command == 'w' || command == 'W') {
-      Forward(150);
+      Forward(140);
     }
     else if (command == 's' || command == 'S') {
-      Backward(150);
+      Backward(120);
     }
     else if (command == 'a' || command == 'A') {
       Left();
@@ -58,18 +58,18 @@ void Backward(unsigned char Speed) {
 void Right() {
   Amotor.run(FORWARD);
   Bmotor.run(BACKWARD);
-  Amotor.setSpeed(120);
-  Bmotor.setSpeed(120);
-  delay(200);
+  Amotor.setSpeed(132);
+  Bmotor.setSpeed(132);
+  delay(160);
   Stop();
 }
 
 void Left() {
   Amotor.run(BACKWARD);
   Bmotor.run(FORWARD);
-  Amotor.setSpeed(120);
-  Bmotor.setSpeed(120);
-  delay(200);
+  Amotor.setSpeed(132);
+  Bmotor.setSpeed(132);
+  delay(160);
   Stop();
 }
 
