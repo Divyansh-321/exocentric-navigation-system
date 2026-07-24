@@ -16,6 +16,7 @@ from planning.astar import a_star_search
 from control.controller import KinematicController
 from control.state_machine import SystemState
 import utils.visualization as vis
+from utils.geometry import get_grid_coordinate
 
 clicked_points = []
 CORNER_LABELS = ["Top-Left", "Top-Right", "Bottom-Right", "Bottom-Left"]
@@ -34,9 +35,9 @@ def mouse_click_handler(event, x, y, flags, param):
         # Target assignment during runtime
         elif sys_state.state in ["AWAITING_TARGET", "NAVIGATION"]:
             sys_state.exact_target_x, sys_state.exact_target_y = x, y
-            sys_state.target_grid_x = int((x / frame_w) * cfg.GRID_SIZE)
-            sys_state.target_grid_y = int((y / frame_h) * cfg.GRID_SIZE)
-            sys_state.state = "NAVIGATION"
+            sys_state.target_grid_x = get_grid_coordinate(x, frame_w, cfg.GRID_SIZE)
+            sys_state.target_grid_y = get_grid_coordinate(y, frame_h, cfg.GRID_SIZE)       
+            sys_state.state = "NAVIGATION"              
             sys_state.current_nav_cmd = "DRIVING"
             print(f"[INFO] Target locked to grid cell: ({sys_state.target_grid_x}, {sys_state.target_grid_y})")
 
