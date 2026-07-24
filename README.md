@@ -35,7 +35,7 @@ The architecture enforces strict operational boundaries between non-deterministi
 
 * **Host System (Perception & Planning):** Operates in soft real-time. The perception loop runs at approximately **15–30 Hz** (bottlenecked by native **720p** camera capture rate and YOLOv8 host inference). Pathfinding executes virtually instantaneously over a **20x20 quantized spatial grid mapped from the native 1280 X 720 frame canvas**, utilizing an **80-pixel dynamic lookahead radius** to smooth trajectory execution and prevent control oscillation near waypoints.
 * **Network Layer (Communication):** Operates on a best-effort basis. UDP prioritizes the most recent command over reliable delivery. Navigation commands are dispatched at a strictly bounded **400ms control interval**, dynamically compensating for heading errors using a **±30° tolerance deadband** without overloading the UDP network buffer.
-* **Embedded Layer (Actuation):** Operates as a hard real-time execution agent. The Arduino maintains no state awareness; it executes a fixed **200ms actuation pulse** per received command before auto-halting to prevent network-induced overshoot.
+* **Embedded Layer (Actuation):** Operates as a hard real-time execution agent. The Arduino maintains no state awareness; it executes calibrated, hardware-tuned actuation pulses (**200ms for translation, 160ms for rotation**) per received command before auto-halting to prevent network-induced overshoot.
 
 ---
  
@@ -137,7 +137,7 @@ Key design principles:
 | :--- | :--- | :--- | :--- |
 | **Communication Layer** | **UDP** | TCP / WebSockets | **Latency over Reliability.** TCP's packet retry mechanism causes head-of-line blocking. Dropping a stale packet is safer than executing delayed movement commands. |
 | **Perception Pipeline** | **Exocentric Vision (Host)** | Onboard SLAM (e.g., Jetson Nano) | **Compute over Autonomy.** Offloading to a host allows for heavy YOLOv8 inference without the SWaP-C (Size, Weight, Power, Cost) penalty of onboard GPUs. |
-| **Control Strategy** | **Discrete 200ms Pulse** | Continuous PID Control | **Jitter Tolerance over Smoothness.** Continuous control over wireless introduces network-induced overshoot. A bounded pulse auto-halts the robot if the network drops. |
+| **Control Strategy** | **Calibrated Actuation Pulses** | Continuous PID Control | **Jitter Tolerance over Smoothness.** Continuous control over wireless introduces network-induced overshoot. Bounded hardware pulses auto-halt the robot if the network drops. |
 
 ---
 
@@ -262,7 +262,7 @@ Detects obstacles and converts them into spatial grid constraints.
 Computes optimal path considering obstacle density and safety margins.
 
 ### 5. Pulse-Based Control
-Transforms continuous motion into discrete stable movement commands.
+Transforms continuous motion into discrete stable movement commands using hardware-calibrated duty limits and windowed delays.
 
 ---
 
