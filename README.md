@@ -217,7 +217,7 @@ The repository codebase corresponds to the final implementation using ESP8266 as
 1. Open the firmware files in the `/robot` directory using the Arduino IDE.
 2. Open the ESP8266 firmware code and locate the Wi-Fi configuration variables. 
 3. **Change the Wi-Fi name (SSID) and password** to match your local Wi-Fi network (ensure this is the exact same network your host laptop is connected to).
-4. Flash the ESP8266 module, then open the Serial Monitor to note its assigned IP address.
+4. Flash the ESP8266 module, then open the Serial Monitor to verify successful network connection and confirm the active IP address.
 5. Flash the Arduino UNO motor control firmware.
 
 ### 2. Host System Setup
