@@ -3,7 +3,7 @@
 A real-time **distributed robotic navigation system** designed for resource-constrained embedded platforms, where perception, state estimation, and planning are decoupled from onboard computation and executed on an external host to achieve low-latency closed-loop control.
 
 ---
-# Problem Statement & Motivation
+## Problem Statement & Motivation
 
 Autonomous navigation on low-cost robotic platforms is fundamentally constrained by limited onboard compute. Intelligent algorithms are compute-heavy, but embedded microcontrollers are compute-limited. 
 
@@ -13,7 +13,7 @@ The system demonstrates how robotics can be restructured as a **distributed real
 
 ---
 
-# System Overview 
+## System Overview 
 
 This project presents a **real-time distributed control pipeline** that integrates computer vision, probabilistic state estimation, and graph-based path planning under a constrained wireless control loop.
 
@@ -29,7 +29,7 @@ This project was developed as a group effort; however, the end-to-end perception
 
 ---
 
-# System Boundaries & Runtime Characteristics
+## System Boundaries & Runtime Characteristics
 
 The architecture enforces strict operational boundaries between non-deterministic intelligence and deterministic actuation.
 
@@ -39,7 +39,7 @@ The architecture enforces strict operational boundaries between non-deterministi
 
 ---
  
-# Key Features
+## Key Features
 
 - Exocentric distributed navigation architecture
 - Real-time robot detection and tracking
@@ -54,7 +54,7 @@ The architecture enforces strict operational boundaries between non-deterministi
 
 ---
 
-# System Architecture
+## System Architecture
 
 ```
                 +----------------------+
@@ -100,7 +100,7 @@ The following diagram presents the complete closed-loop exocentric navigation pi
 
 ---
 
-# Design Philosophy
+## Design Philosophy
 
 The system is intentionally designed around a **compute–control separation principle**, where all non-deterministic and compute-heavy tasks are externalized, while the embedded system is restricted to deterministic execution.
 
@@ -119,7 +119,7 @@ Key design principles:
 
 ---
 
-# Key Engineering Decisions
+## Key Engineering Decisions
 
 - Deep learning inference is executed on a host machine rather than onboard the robot, allowing computationally intensive perception without embedded constraints.
 
@@ -141,7 +141,7 @@ Key design principles:
 
 ---
 
-# Engineering Highlights
+## Engineering Highlights
 
 - Distributed real-time robotics architecture under embedded compute constraints
 - Externalized perception pipeline replacing onboard SLAM dependency
@@ -153,7 +153,7 @@ Key design principles:
 
 ---
 
-# Repository Structure
+## Repository Structure
 
 ```
 vision/        → Homography, detection pipeline
@@ -178,7 +178,7 @@ README.md
 
 ---
 
-# Hardware Architecture
+## Hardware Architecture
 
 - **Robot Platform:** Stacked Arduino UNO + L293D Shield
 - **Communication:** ESP8266 (Wi-Fi UDP → Serial bridge)
@@ -195,7 +195,7 @@ The repository codebase corresponds to the final implementation using ESP8266 as
 
 ---
 
-# Software Stack
+## Software Stack
 
 - Python (core system)
 - OpenCV (vision pipeline)
@@ -211,7 +211,7 @@ The repository codebase corresponds to the final implementation using ESP8266 as
 
 ---
 
-# Installation & Setup
+## Installation & Setup
 
 ### 1. Embedded Hardware Setup
 1. Open the firmware files in the `/robot` directory using the Arduino IDE.
@@ -231,7 +231,7 @@ python -m pip install -r requirements.txt
 
 ---
 
-# Execution
+## Execution
 
 1. Verify that both your host machine (laptop) and the ESP8266 are connected to your configured local Wi-Fi network.
 2. Update the ESP8266 IP address in `config/settings.py` with the one obtained from the Serial Monitor.
@@ -247,7 +247,7 @@ python main.py
 
 ---
 
-# Core Algorithms
+## Core Algorithms
 
 ### 1. Homography Transformation
 Maps perspective view into a top-down coordinate system.
@@ -266,7 +266,7 @@ Transforms continuous motion into discrete stable movement commands using hardwa
 
 ---
 
-# Limitations
+## Limitations
 
 Like most vision-based autonomous navigation systems, the current implementation makes several design assumptions:
 
@@ -282,7 +282,7 @@ Like most vision-based autonomous navigation systems, the current implementation
  
 ---
 
-# Edge Behavior & System Degradation
+## Edge Behavior & System Degradation
 
 The system exhibits specific deterministic behaviors under edge-case conditions and sensor failure:
 
@@ -292,7 +292,7 @@ The system exhibits specific deterministic behaviors under edge-case conditions 
 
 ---
 
-# Future Improvements
+## Future Improvements
 
 - ROS2 migration
 - Multi-robot coordination
@@ -303,7 +303,7 @@ The system exhibits specific deterministic behaviors under edge-case conditions 
 
 ---
 
-# Results
+## Results
 
 The implemented system successfully demonstrates:
 
@@ -322,7 +322,7 @@ The figure below shows the complete navigation pipeline during runtime. The syst
 
 ---
 
-# Demonstration
+## Demonstration
 
 ### Autonomous Navigation Demo
 
@@ -348,6 +348,6 @@ A complete demonstration, including multiple autonomous navigation runs, is avai
 
 ---
 
-# License
+## License
 
 MIT License
