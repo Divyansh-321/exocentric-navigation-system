@@ -33,9 +33,9 @@ This project was developed as a group effort; however, the end-to-end perception
 
 The architecture enforces strict operational boundaries between non-deterministic intelligence and deterministic actuation.
 
-* **Host System (Perception & Planning):** Operates in soft real-time. The perception loop runs at approximately **15–30 Hz** (bottlenecked by native **720p** camera capture rate and YOLOv8 host inference). Pathfinding executes virtually instantaneously over a **20x20 quantized spatial grid mapped from the native 1280 X 720 frame canvas**, utilizing an **80-pixel dynamic lookahead radius** to smooth trajectory execution and prevent control oscillation near waypoints.
-* **Network Layer (Communication):** Operates on a best-effort basis. UDP prioritizes the most recent command over reliable delivery. Navigation commands are dispatched at a strictly bounded **400ms control interval**, dynamically compensating for heading errors using a **±30° tolerance deadband** without overloading the UDP network buffer.
-* **Embedded Layer (Actuation):** Operates as a hard real-time execution agent. The Arduino maintains no state awareness; it executes calibrated, hardware-tuned actuation pulses (**200ms for translation, 160ms for rotation**) per received command before auto-halting to prevent network-induced overshoot.
+- **Host System (Perception & Planning):** Operates in soft real-time. The perception loop runs at approximately **15–30Hz** (bottlenecked by native **720p** camera capture rate and YOLOv8 host inference). Pathfinding executes virtually instantaneously over a **20x20 quantized spatial grid mapped from the native 1280x720 frame canvas**, utilizing an **80-pixel dynamic lookahead radius** to smooth trajectory execution and prevent control oscillation near waypoints.
+- **Network Layer (Communication):** Operates on a best-effort basis. UDP prioritizes the most recent command over reliable delivery. Navigation commands are dispatched at a strictly bounded **400ms control interval**, dynamically compensating for heading errors using a **±30° tolerance deadband** without overloading the UDP network buffer.
+- **Embedded Layer (Actuation):** Operates as a hard real-time execution agent. The Arduino maintains no state awareness; it executes calibrated, hardware-tuned actuation pulses (**200ms for translation, 160ms for rotation**) per received command before auto-halting to prevent network-induced overshoot.
 
 ---
  
@@ -104,11 +104,11 @@ The following diagram presents the complete closed-loop exocentric navigation pi
 
 A custom Ultralytics YOLOv8 model was trained to perform real-time obstacle detection for the navigation system while maintaining low inference overhead on the host machine.
 
-- **Dataset Preparation:** The baseline dataset consisted of **54 manually collected source images** (38 training, 11 validation, and 5 testing). To prevent validation leakage, a **3× data augmentation pipeline** was applied **exclusively to the training split**, expanding the final dataset to **130 images** (114 augmented training / 11 validation / 5 testing).
-- **Preprocessing:** All frames were automatically oriented using an **Auto-Orient** layer and resized to **640 × 640** pixels, matching the model's native input resolution.
+- **Dataset Preparation:** The baseline dataset consisted of **54 manually collected source images** (38 training, 11 validation, and 5 testing). To prevent validation leakage, a **3x data augmentation pipeline** was applied **exclusively to the training split**, expanding the final dataset to **130 images** (114 augmented training / 11 validation / 5 testing).
+- **Preprocessing:** All frames were automatically oriented using an **Auto-Orient** layer and resized to **640x640** pixels, matching the model's native input resolution.
 - **Data Augmentation:** To improve robustness against variations encountered during real-world deployment, the following augmentations were applied to the training split:
   - **Spatial Transformations:** Horizontal and vertical flips, 90° rotations, and random rotations between **−15°** and **+15°**.
-  - **Photometric Adjustments:** Brightness and exposure variations (**±15%**) together with Gaussian blur (up to **1.3 px**) to simulate changes in lighting and imaging conditions.
+  - **Photometric Adjustments:** Brightness and exposure variations (**±15%**) together with Gaussian blur (up to **1.3px**) to simulate changes in lighting and imaging conditions.
 - **Deployment Configuration:** During active navigation, the detector operates with a confidence threshold of **0.75** and uses `stream=True` inference to process frames sequentially without accumulating frame buffers in host memory.
 - **Model Artifacts:** The trained model weights (`best_obstacle.pt`) are provided in the `models/` directory to support reproducible deployment.
 
@@ -127,10 +127,10 @@ The trained detector was evaluated using standard object detection metrics on th
 | **mAP@50–95** | **0.6021** | Accuracy across multiple IoU thresholds |
 | **Precision** | **0.8535** | True positive detection rate |
 | **Recall** | **0.9745** | High recall was prioritized to minimize missed obstacle detections |
-| **Validation Latency (GPU)** | **7.18 ms** | 0.41 ms preprocessing, 5.75 ms inference, 1.02 ms postprocessing on an NVIDIA T4 GPU |
-| **Deployment Latency (CPU)** | **~15–20 ms** | Measured on the deployment laptop CPU |
+| **Validation Latency (GPU)** | **7.18ms** | 0.41 ms preprocessing, 5.75 ms inference, 1.02 ms postprocessing on an NVIDIA T4 GPU |
+| **Deployment Latency (CPU)** | **~15–20ms** | Measured on the deployment laptop CPU |
 
-> **Design Note:** Although the vision pipeline is capable of high-frame-rate inference on standard laptop hardware, the overall control loop is intentionally throttled to a **400 ms update interval**. This design choice prevents UDP packet serialization jitter and aligns the perception pipeline with the physical actuation latency of the Arduino-based mobile robot, resulting in stable closed-loop navigation.
+> **Design Note:** Although the vision pipeline is capable of high-frame-rate inference on standard laptop hardware, the overall control loop is intentionally throttled to a **400ms update interval**. This design choice prevents UDP packet serialization jitter and aligns the perception pipeline with the physical actuation latency of the Arduino-based mobile robot, resulting in stable closed-loop navigation.
 
 ---
 
@@ -268,9 +268,9 @@ python -m pip install -r requirements.txt
 ## Execution
 
 ### Phase 1: Pre-Launch Configuration
-1. Verify that both your host machine (laptop) and the ESP8266 are connected to your configured local Wi-Fi network.
-2. Update the ESP8266 IP address in `config/settings.py` with the one obtained from the Serial Monitor.
-3. Launch the host pipeline by running `python main.py` in your terminal.
+1. **Verify Connection:** Ensure both your host machine (laptop) and the ESP8266 are connected to your configured local Wi-Fi network.
+2. **Configure IP:** Update the ESP8266 IP address in `config/settings.py` with the one obtained from the Serial Monitor.
+3. **Launch Pipeline:** Run `python main.py` in your terminal.
 
 ### Phase 2: Runtime UI Workflow
 1. **Calibrate:** Click 4 points in the video feed to define the homography workspace.
@@ -318,9 +318,9 @@ Like most vision-based autonomous navigation systems, the current implementation
 
 The system exhibits specific deterministic behaviors under edge-case conditions and sensor failure:
 
-* **Out-of-Bounds State Loss:** The operational workspace is strictly bounded by the calibrated homography matrix. If the robot travels outside this mapped coordinate space (e.g., into the unmapped camera periphery), visual tracking immediately fails. The system is designed to fail safely: it halts state estimation and broadcasts a continuous `X` (STOP) pulse over UDP to prevent runaway actuation.
-* **Scale-Dependent Padding Variance:** Obstacle avoidance relies on static spatial padding added to YOLOv8 bounding boxes. Because the homography is calibrated using a flat physical reference, any significant change in the camera's height or the height of the physical obstacles alters the perspective scale. In edge cases, this perspective distortion results in insufficient obstacle inflation, occasionally allowing the robot to clip the edges of taller objects.
-* **Dynamic Obstacle Occlusion:** Since the system relies entirely on exocentric overhead vision, if an obstacle physically occludes the robot from the camera's view, the Kalman filter will attempt to predict the robot's trajectory. However, prolonged occlusion will cause state drift, eventually requiring a system reset.
+- **Out-of-Bounds State Loss:** The operational workspace is strictly bounded by the calibrated homography matrix. If the robot travels outside this mapped coordinate space (e.g., into the unmapped camera periphery), visual tracking immediately fails. The system is designed to fail safely: it halts state estimation and broadcasts a continuous `X` (STOP) pulse over UDP to prevent runaway actuation.
+- **Scale-Dependent Padding Variance:** Obstacle avoidance relies on static spatial padding added to YOLOv8 bounding boxes. Because the homography is calibrated using a flat physical reference, any significant change in the camera's height or the height of the physical obstacles alters the perspective scale. In edge cases, this perspective distortion results in insufficient obstacle inflation, occasionally allowing the robot to clip the edges of taller objects.
+- **Dynamic Obstacle Occlusion:** Since the system relies entirely on exocentric overhead vision, if an obstacle physically occludes the robot from the camera's view, the Kalman filter will attempt to predict the robot's trajectory. However, prolonged occlusion will cause state drift, eventually requiring a system reset.
 
 ---
 
