@@ -107,8 +107,8 @@ A custom Ultralytics YOLOv8 model was trained to perform real-time obstacle dete
 - **Dataset Preparation:** The baseline dataset consisted of **54 manually collected source images** (38 training, 11 validation, and 5 testing). To prevent validation leakage, a **3× data augmentation pipeline** was applied **exclusively to the training split**, expanding the final dataset to **130 images** (114 augmented training / 11 validation / 5 testing).
 - **Preprocessing:** All frames were automatically oriented using an **Auto-Orient** layer and resized to **640 × 640** pixels, matching the model's native input resolution.
 - **Data Augmentation:** To improve robustness against variations encountered during real-world deployment, the following augmentations were applied to the training split:
-  - *Spatial Transformations:* Horizontal and vertical flips, 90° rotations, and random rotations between **−15°** and **+15°**.
-  - *Photometric Adjustments:* Brightness and exposure variations (±15%) together with Gaussian blur (up to **1.3 px**) to simulate changes in lighting and imaging conditions.
+  - **Spatial Transformations:** Horizontal and vertical flips, 90° rotations, and random rotations between **−15°** and **+15°**.
+  - **Photometric Adjustments:** Brightness and exposure variations (**±15%**) together with Gaussian blur (up to **1.3 px**) to simulate changes in lighting and imaging conditions.
 - **Deployment Configuration:** During active navigation, the detector operates with a confidence threshold of **0.75** and uses `stream=True` inference to process frames sequentially without accumulating frame buffers in host memory.
 - **Model Artifacts:** The trained model weights (`best_obstacle.pt`) are provided in the `models/` directory to support reproducible deployment.
 
