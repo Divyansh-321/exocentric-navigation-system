@@ -267,12 +267,15 @@ python -m pip install -r requirements.txt
 
 ## Execution
 
+### Phase 1: Pre-Launch Configuration
 1. Verify that both your host machine (laptop) and the ESP8266 are connected to your configured local Wi-Fi network.
 2. Update the ESP8266 IP address in `config/settings.py` with the one obtained from the Serial Monitor.
 3. Launch the host pipeline by running `python main.py` in your terminal.
-4. **Calibrate:** Click 4 points in the video feed to define the homography workspace.
-5. **Initialize:** Press **SPACE** to initialize robot orientation calibration.
-6. **Navigate:** Click a target location on the interface for autonomous pathfinding and execution.
+
+### Phase 2: Runtime UI Workflow
+1. **Calibrate:** Click 4 points in the video feed to define the homography workspace.
+2. **Initialize:** Press **SPACE** to initialize robot orientation calibration.
+3. **Navigate:** Click a target location on the interface for autonomous pathfinding and execution.
 
 ---
 
