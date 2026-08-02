@@ -100,6 +100,40 @@ The following diagram presents the complete closed-loop exocentric navigation pi
 
 ---
 
+## Custom Computer Vision Pipeline
+
+A custom Ultralytics YOLOv8 model was trained to perform real-time obstacle detection for the navigation system while maintaining low inference overhead on the host machine.
+
+- **Dataset Preparation:** The baseline dataset consisted of **54 manually collected source images** (38 training, 11 validation, and 5 testing). To prevent validation leakage, a **3× data augmentation pipeline** was applied **exclusively to the training split**, expanding the final dataset to **130 images** (114 augmented training / 11 validation / 5 testing).
+- **Preprocessing:** All frames were automatically oriented using an **Auto-Orient** layer and resized to **640 × 640** pixels, matching the model's native input resolution.
+- **Data Augmentation:** To improve robustness against variations encountered during real-world deployment, the following augmentations were applied to the training split:
+  - *Spatial Transformations:* Horizontal and vertical flips, 90° rotations, and random rotations between **−15°** and **+15°**.
+  - *Photometric Adjustments:* Brightness and exposure variations (±15%) together with Gaussian blur (up to **1.3 px**) to simulate changes in lighting and imaging conditions.
+- **Deployment Configuration:** During active navigation, the detector operates with a confidence threshold of **0.75** and uses `stream=True` inference to process frames sequentially without accumulating frame buffers in host memory.
+- **Model Artifacts:** The trained model weights (`best_obstacle.pt`) are provided in the `models/` directory to support reproducible deployment.
+
+---
+
+## Model Performance & Evaluation Metrics
+
+The trained detector was evaluated using standard object detection metrics on the holdout test split.
+
+| Evaluation Metric | Value | Notes |
+| :--- | :---: | :--- |
+| **Model Architecture** | YOLOv8n (Nano) | Selected for low-latency edge deployment |
+| **Training Epochs** | 50 | Training completed after 50 epochs |
+| **Training Time** | 1.91 minutes | NVIDIA T4 GPU |
+| **mAP@50** | **0.9721** | Bounding-box accuracy at 0.5 IoU |
+| **mAP@50–95** | **0.6021** | Accuracy across multiple IoU thresholds |
+| **Precision** | **0.8535** | True positive detection rate |
+| **Recall** | **0.9745** | High recall was prioritized to minimize missed obstacle detections |
+| **Validation Latency (GPU)** | **7.18 ms** | 0.41 ms preprocessing, 5.75 ms inference, 1.02 ms postprocessing on an NVIDIA T4 GPU |
+| **Deployment Latency (CPU)** | **~15–20 ms** | Measured on the deployment laptop CPU |
+
+> **Design Note:** Although the vision pipeline is capable of high-frame-rate inference on standard laptop hardware, the overall control loop is intentionally throttled to a **400 ms update interval**. This design choice prevents UDP packet serialization jitter and aligns the perception pipeline with the physical actuation latency of the Arduino-based mobile robot, resulting in stable closed-loop navigation.
+
+---
+
 ## Design Philosophy
 
 The system is intentionally designed around a **compute–control separation principle**, where all non-deterministic and compute-heavy tasks are externalized, while the embedded system is restricted to deterministic execution.
@@ -213,14 +247,14 @@ The repository codebase corresponds to the final implementation using ESP8266 as
 
 ## Installation & Setup
 
-### 1. Embedded Hardware Setup
+### Embedded Hardware Setup
 1. Open the firmware files in the `/robot` directory using the Arduino IDE.
 2. Open the ESP8266 firmware code and locate the Wi-Fi configuration variables. 
 3. **Change the Wi-Fi name (SSID) and password** to match your local Wi-Fi network (ensure this is the exact same network your host laptop is connected to).
 4. Flash the ESP8266 module, then open the Serial Monitor to verify successful network connection and confirm the active IP address.
 5. Flash the Arduino UNO motor control firmware.
 
-### 2. Host System Setup
+### Host System Setup
 Clone the repository and install the required Python dependencies:
 
 ```bash
@@ -235,12 +269,7 @@ python -m pip install -r requirements.txt
 
 1. Verify that both your host machine (laptop) and the ESP8266 are connected to your configured local Wi-Fi network.
 2. Update the ESP8266 IP address in `config/settings.py` with the one obtained from the Serial Monitor.
-3. Launch the host pipeline:
-
-```bash
-python main.py
-```
-
+3. Launch the host pipeline by running `python main.py` in your terminal.
 4. **Calibrate:** Click 4 points in the video feed to define the homography workspace.
 5. **Initialize:** Press **SPACE** to initialize robot orientation calibration.
 6. **Navigate:** Click a target location on the interface for autonomous pathfinding and execution.
@@ -256,7 +285,7 @@ Maps perspective view into a top-down coordinate system.
 Reduces noise in visual tracking and stabilizes state estimation.
 
 ### 3. YOLOv8 Detection
-Detects obstacles and converts them into spatial grid constraints.
+Detects obstacles and converts them into spatial grid constraints using the custom-trained 50-epoch model detailed above.
 
 ### 4. Weighted A*
 Computes optimal path considering obstacle density and safety margins.
